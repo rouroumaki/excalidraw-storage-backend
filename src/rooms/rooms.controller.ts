@@ -46,4 +46,39 @@ export class RoomsController {
       id,
     };
   }
+
+  @Get(':id/key')
+  async getRoomKey(@Param() params): Promise<{ key: string } | null> {
+    const roomId = params.id;
+    this.logger.debug(`Get room key for ${roomId}`);
+
+    const roomKey = await this.storageService.getRoomKey(roomId);
+    if (!roomKey) {
+      throw new NotFoundException(`Room key not found for room ${roomId}`);
+    }
+
+    return {
+      key: roomKey,
+    };
+  }
+
+  @Put(':id/key')
+  async setRoomKey(
+    @Param() params,
+    @Body() body: { key: string },
+  ): Promise<{ id: string }> {
+    const roomId = params.id;
+    const roomKey = body.key;
+
+    if (!roomKey) {
+      throw new Error('Room key is required');
+    }
+
+    await this.storageService.setRoomKey(roomId, roomKey);
+    this.logger.debug(`Set room key for ${roomId}`);
+
+    return {
+      id: roomId,
+    };
+  }
 }

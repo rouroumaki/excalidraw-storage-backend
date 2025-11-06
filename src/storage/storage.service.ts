@@ -34,6 +34,38 @@ export class StorageService {
   set(key: string, value: Buffer, namespace: StorageNamespace): Promise<true> {
     return this.storagesMap.get(namespace).set(key, value);
   }
+
+  /**
+   * Get roomKey for a roomId
+   * @param roomId The room ID
+   * @returns The roomKey string or null if not found
+   */
+  async getRoomKey(roomId: string): Promise<string | null> {
+    const key = `${roomId}:key`;
+    const value = await this.storagesMap
+      .get(StorageNamespace.ROOMS)
+      .get(key);
+    if (!value) {
+      return null;
+    }
+    // roomKey is stored as a string, convert from Buffer if needed
+    if (Buffer.isBuffer(value)) {
+      return value.toString('utf-8');
+    }
+    return value as string;
+  }
+
+  /**
+   * Set roomKey for a roomId
+   * @param roomId The room ID
+   * @param roomKey The roomKey string to store
+   */
+  async setRoomKey(roomId: string, roomKey: string): Promise<true> {
+    const key = `${roomId}:key`;
+    // Convert string to Buffer for consistency with other storage
+    const buffer = Buffer.from(roomKey, 'utf-8');
+    return this.storagesMap.get(StorageNamespace.ROOMS).set(key, buffer);
+  }
 }
 
 export enum StorageNamespace {
